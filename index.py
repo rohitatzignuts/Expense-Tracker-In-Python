@@ -124,7 +124,7 @@ def main():
         print("1 - Add Expense")
         print("2 - Edit Expense")
         print("3 - View Expenses")
-        print("4 - Delet Expenses")
+        print("4 - Delete Expense")
         print("5 - Save and Exit")
         print("\n")
 

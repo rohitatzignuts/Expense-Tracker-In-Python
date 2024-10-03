@@ -21,7 +21,7 @@ A simple command-line application to track your expenses. This tool allows you t
 1. **Clone the repository**:
 
    ```bash
-   git clone <https://github.com/rohitatzignuts/Expense-Tracker-In-Python.git>
+   git clone https://github.com/rohitatzignuts/Expense-Tracker-In-Python.git
    cd expense-tracker
    ```
 
@@ -61,8 +61,3 @@ Expense Tracker
 ## File Format
 
 Expenses are stored in a file named `expenses.json`. The format used is JSON, making it easy to read or modify manually if needed.
-
-## Troubleshooting
-
-- **File Not Found**: If you see a "File not found" error, it means the `expenses.json` file does not exist. The program will create this file automatically when you add an expense.
-- **Invalid Input**: Ensure you enter valid numeric values for amounts and the correct date format (DD-MM-YYYY) when prompted.

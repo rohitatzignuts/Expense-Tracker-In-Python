@@ -7,6 +7,7 @@ A simple command-line application to track your expenses. This tool allows you t
 - Add new expenses with date, amount, and description.
 - Edit existing expenses.
 - View all expenses.
+- Delete an expense.
 - Save expenses to a JSON file.
 
 ## Requirements
@@ -48,13 +49,15 @@ Expense Tracker
 1 - Add Expense
 2 - Edit Expense
 3 - View Expenses
-4 - Save and Exit
+4 - Delete Expenses
+5 - Save and Exit
 ```
 
 - **Add Expense**: You will be prompted to enter the date, amount, and description of the expense. You can skip the date to use the current date.
 - **Edit Expense**: You can choose an existing expense by its ID to update its details.
 
 - **View Expenses**: Display all the recorded expenses.
+- **View Expenses**: You can choose an expense by its ID to delete.
 
 - **Save and Exit**: Save your expenses to a file and exit the program.
 

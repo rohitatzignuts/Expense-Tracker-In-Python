@@ -1,11 +1,1 @@
-[
-  { "id": 1, "date": "03-10-2024", "amount": 550.0, "description": "test" },
-  {
-    "id": 435,
-    "date": "03-10-2024",
-    "amount": 69.0,
-    "description": "breakfast"
-  },
-  { "id": 575, "date": "03-10-2024", "amount": 78.0, "description": "lunch" },
-  { "id": 532, "date": "03-10-2024", "amount": 100.0, "description": "dinner" }
-]
+[{"id": 435, "date": "03-10-2024", "amount": 69.0, "description": "breakfast"}, {"id": 575, "date": "03-10-2024", "amount": 80.0, "description": "lunch"}]

@@ -93,6 +93,28 @@ def view_expenses(expenses):
         print("----------------")
 
 
+# Delete Expenses
+def delete_expense(expenses):
+    view_expenses(expenses)
+    try:
+        del_id = int(input("Select Id for the expense to be deleted: "))
+    except ValueError:
+        print("Invalid ID")
+        return
+
+    # Create a new list without the expense to be deleted
+    updated_expenses = [expense for expense in expenses if expense["id"] != del_id]
+
+    if len(updated_expenses) < len(expenses):
+        expenses[:] = updated_expenses
+        save_expenses(expenses)
+        print("Expense Deleted!!")
+    else:
+        print("Expense not found.")
+
+    return
+
+
 def main():
     expenses = get_expenses()
 
@@ -102,7 +124,8 @@ def main():
         print("1 - Add Expense")
         print("2 - Edit Expense")
         print("3 - View Expenses")
-        print("4 - Save and Exit")
+        print("4 - Delet Expenses")
+        print("5 - Save and Exit")
         print("\n")
 
         choice = input("Enter your choice: ")
@@ -133,6 +156,8 @@ def main():
         elif choice == "3":
             view_expenses(expenses)
         elif choice == "4":
+            delete_expense(expenses)
+        elif choice == "5":
             save_expenses(expenses)
             break
         else:

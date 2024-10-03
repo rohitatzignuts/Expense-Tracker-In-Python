@@ -1,48 +1,57 @@
 import datetime
-import json
 import random
+from dbtest import my_cursor, mydb
 
 
 # Get Expenses
-def get_expenses(file="expenses.json"):
+def getExpenses():
     try:
-        with open(file, "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print("File not found")
-        return []
-    except json.JSONDecodeError:
-        print("Error decoding JSON")
-        return []
+        my_cursor.execute("SELECT * FROM `expenses`")
+        results = my_cursor.fetchall()
 
+        # Convert the results into a list of dictionaries
+        expenses = []
+        for row in results:
+            expenses.append(
+                {"id": row[0], "date": row[1], "amount": row[2], "description": row[3]}
+            )
 
-# Save Expenses
-def save_expenses(data, file="expenses.json"):
-    try:
-        with open(file, "w") as f:
-            json.dump(data, f)
+        return expenses
     except Exception as e:
-        print(f"Error while saving: {e}")
+        print(f"Error getting Expenses from DB: {e}")
+        return []
+
+
+# Save Expense
+def saveExpenses(expense):
+    try:
+        sql = "INSERT INTO `expenses` (date, amount, description) VALUES (%s, %s, %s)"
+        val = (expense["date"], expense["amount"], expense["description"])
+        my_cursor.execute(sql, val)
+        mydb.commit()
+        print("Expense added to the database!")
+    except Exception as e:
+        print(f"Error while adding expense to the DB: {e}")
 
 
 # Add Expense
-def add_expense(expenses):
+def addExpense():
     try:
         date = input("Enter Date (DD-MM-YYYY) or skip: ")
         amount = input("Enter Amount: ")
         description = input("Enter Description: ")
 
-        # format date
+        # Format date
         if date:
             try:
-                date = datetime.datetime.strptime(date, "%d-%m-%Y").strftime("%d-%m-%Y")
+                date = datetime.datetime.strptime(date, "%d-%m-%Y").strftime("%Y-%m-%d")
             except ValueError:
                 print("Invalid Date Value!!")
                 return
         else:
-            date = datetime.datetime.now().strftime("%d-%m-%Y")
+            date = datetime.datetime.now().strftime("%Y-%m-%d")
 
-        # format amount
+        # Format amount
         try:
             amount = float(amount)
         except ValueError:
@@ -50,37 +59,67 @@ def add_expense(expenses):
             return
 
         expense = {
-            "id": random.randint(1, 1000),
             "date": date,
             "amount": amount,
             "description": description,
         }
 
-        # append expense
-        expenses.append(expense)
+        # Save the expense to the DB
+        saveExpenses(expense)
         print("Expense added!")
     except Exception as e:
         print(f"Error adding an expense: {e}")
 
 
 # Edit Expense
-def edit_expense(expenses):
-    view_expenses(expenses)
-    try:
-        edit_id = int(input("Select Id for the expense to be edited: "))
-    except ValueError:
-        print("Invalid ID")
-        return
+def editExpenses():
+    expenses = getExpenses()
+    viewExpenses()
 
-    for expense in expenses:
-        if expense["id"] == edit_id:
-            return expense
-    print("Expense not found.")
-    return
+    try:
+        edit_id = int(input("Enter ID for the expense to be edited: "))
+        expense = next((e for e in expenses if e["id"] == edit_id), None)
+
+        if not expense:
+            print("Expense not found.")
+            return
+
+        # Update date, amount, and description
+        new_date = input(f"Date (DD-MM-YYYY) [{expense['date']}]: ")
+        expense["date"] = new_date if new_date else expense["date"]
+
+        # Ensure amount is a float, handling invalid input
+        new_amount = input(f"Amount [{expense['amount']}]: ")
+        expense["amount"] = float(new_amount) if new_amount else expense["amount"]
+
+        new_description = input(f"Description [{expense['description']}]: ")
+        expense["description"] = (
+            new_description if new_description else expense["description"]
+        )
+
+        # Convert the date to the correct format if it was updated
+        if new_date:
+            expense["date"] = datetime.datetime.strptime(
+                expense["date"], "%d-%m-%Y"
+            ).strftime("%Y-%m-%d")
+
+        # Update the expense in the database
+        sql = "UPDATE `expenses` SET date = %s, amount = %s, description = %s WHERE id = %s"
+        my_cursor.execute(
+            sql, (expense["date"], expense["amount"], expense["description"], edit_id)
+        )
+        mydb.commit()
+        print("Expense updated!!")
+
+    except ValueError as ve:
+        print(f"Invalid input: {ve}")
+    except Exception as e:
+        print(f"Error updating expense: {e}")
 
 
 # View Expenses
-def view_expenses(expenses):
+def viewExpenses():
+    expenses = getExpenses()
     if not expenses:
         print("Nothing to show...")
         return
@@ -93,30 +132,26 @@ def view_expenses(expenses):
         print("----------------")
 
 
-# Delete Expenses
-def delete_expense(expenses):
-    view_expenses(expenses)
+# View Expenses
+def deleteExpense():
+    expenses = getExpenses()
+    viewExpenses()
+
     try:
-        del_id = int(input("Select Id for the expense to be deleted: "))
-    except ValueError:
-        print("Invalid ID")
-        return
+        del_id = int(input("Enter ID for the expense to be deleted: "))
 
-    # Create a new list without the expense to be deleted
-    updated_expenses = [expense for expense in expenses if expense["id"] != del_id]
+        sql = "DELETE FROM `expenses` WHERE id = %s"
+        my_cursor.execute(sql, (del_id,))
+        mydb.commit()
 
-    if len(updated_expenses) < len(expenses):
-        expenses[:] = updated_expenses
-        save_expenses(expenses)
         print("Expense Deleted!!")
-    else:
-        print("Expense not found.")
-
-    return
+    except ValueError:
+        print("Invalid ID.")
+    except Exception as e:
+        print(f"Error deleting expense: {e}")
 
 
 def main():
-    expenses = get_expenses()
 
     while True:
         print("\n")
@@ -131,34 +166,14 @@ def main():
         choice = input("Enter your choice: ")
 
         if choice == "1":
-            add_expense(expenses)
+            addExpense()
         elif choice == "2":
-            res = edit_expense(expenses)
-            if res:
-                date = input(f"Date (DD-MM-YYYY) [{res['date']}]: ")
-                if date:
-                    res["date"] = datetime.datetime.strptime(date, "%d-%m-%Y").strftime(
-                        "%d-%m-%Y"
-                    )
-
-                amount = input(f"Amount [{res['amount']}]: ")
-                if amount:
-                    try:
-                        res["amount"] = float(amount)
-                    except ValueError:
-                        print("Invalid amount")
-
-                description = input(f"Description [{res['description']}]: ")
-                if description:
-                    res["description"] = description
-
-                print("Expense updated!!")
+            editExpenses()
         elif choice == "3":
-            view_expenses(expenses)
+            viewExpenses()
         elif choice == "4":
-            delete_expense(expenses)
+            deleteExpense()
         elif choice == "5":
-            save_expenses(expenses)
             break
         else:
             print("Wrong choice!")
